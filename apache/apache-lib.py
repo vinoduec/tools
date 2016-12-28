@@ -44,7 +44,7 @@ def diff_version_to_branch(args):
   git_log = get_git_log(branch)
   for ticket in tickets_on_jira:
       if git_log.find(ticket["key"]) == -1:
-          print ticket["key"]
+          print ticket["key"], ticket["summary"]
 
 project_dirs = [    "hadoop-common-project/hadoop-common",
                     "hadoop-hdfs-project/hadoop-hdfs",
