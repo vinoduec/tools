@@ -6,6 +6,7 @@ import sys
 
 reload(sys)  
 sys.setdefaultencoding('utf8')
+PageSize = 100
 
 projects = ["HADOOP", "YARN", "MAPREDUCE", "HDFS"]
 
@@ -13,25 +14,31 @@ def get_git_log(branch):
     git_command = ["git", "log", "--oneline", branch]
     process = Popen(git_command, stdout=PIPE)
     (output, err) = process.communicate()
-    exit_code = process.wait()
     return output
-    
+
+
 def get_tickets(fixVersion):
     return_value = []
     for p in projects:
         jql = "project in (%s) and fixVersion = %s " % (p, fixVersion)
-        parameters = urllib.urlencode({'jql': jql})
-        final_url ="https://issues.apache.org/jira/rest/api/2/search?%s" % parameters
-        response = urllib2.urlopen(final_url)
-        result = json.loads(response.read())
-        for issue in result["issues"]:
-            key = issue["key"]
-            summary = issue["fields"]["summary"]
-            fixVersion0 = "None"
-            if len(issue["fields"]["fixVersions"]) >=1:
-                fixVersion0 = issue["fields"]["fixVersions"][0]["name"]
-            return_value.append({"key" : key, "summary": summary, "fix-version": fixVersion0})
-        response.close()
+        start = 0;
+        while True:
+            parameters = urllib.urlencode({'jql': jql, 'startAt': start, 'maxResults': PageSize})
+            final_url ="https://issues.apache.org/jira/rest/api/2/search?%s" % parameters
+            response = urllib2.urlopen(final_url)
+            result = json.loads(response.read())
+            for issue in result["issues"]:
+                key = issue["key"]
+                summary = issue["fields"]["summary"]
+                fixVersion0 = "None"
+                if len(issue["fields"]["fixVersions"]) >=1:
+                    fixVersion0 = issue["fields"]["fixVersions"][0]["name"]
+                return_value.append({"key" : key, "summary": summary, "fix-version": fixVersion0})
+            response.close()
+            start += PageSize
+            if (len(result["issues"]) < PageSize) :
+                break;
+    print "Total number of tickets in : ", fixVersion, len(return_value)
     return return_value
 
 def diff_version_to_branch(args):
