@@ -53,6 +53,19 @@ def diff_version_to_branch(args):
       if git_log.find(ticket["key"]) == -1:
           print ticket["key"], ticket["summary"]
 
+
+def version_include_branch(args):
+  fixVersion = "2.7.2"
+  branch = "branch-2.7.2"
+  fixVersion = args.fix_version
+  branch = args.branch
+  print "===== Looking at release: " + fixVersion + ", branch: " + branch + " ====="
+  tickets_on_jira = get_tickets(fixVersion)
+  git_log = get_git_log(branch)
+  for ticket in tickets_on_jira:
+      if git_log.find(ticket["key"]) != -1:
+          print ticket["key"]
+
 project_dirs = [    "hadoop-common-project/hadoop-common",
                     "hadoop-hdfs-project/hadoop-hdfs",
                     "hadoop-mapreduce-project",
@@ -112,6 +125,10 @@ class ApacheLib(object):
         parser_diff_version_to_branch.add_argument('fix_version', help='fix_version help')
         parser_diff_version_to_branch.add_argument('branch', help='branch help')
 
+        parser_diff_version_to_version = subparsers.add_parser('version-include-branch', help='Show tickets marked against version A and also in branch')
+        parser_diff_version_to_version.add_argument('fix_version', help='fix_version help')
+        parser_diff_version_to_version.add_argument('branch', help='branch help')
+
         parser_diff_version_to_changes = subparsers.add_parser('diff-version-to-changes', help='Show tickets marked against version A but not in CHANGES.txt files')
         parser_diff_version_to_changes.add_argument('fix_version', help='fix_version help')
         parser_diff_version_to_changes.add_argument('branch', help='fix_version help')
@@ -127,6 +144,8 @@ class ApacheLib(object):
 
         if args.subparser_name == 'diff-version-to-branch':
             diff_version_to_branch(args)
+        elif args.subparser_name == 'version-include-branch':
+            version_include_branch(args)
         elif args.subparser_name == 'diff-version-to-version':
             diff_version_to_version(args)
         elif args.subparser_name == 'diff-version-to-changes':
