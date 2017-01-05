@@ -8,7 +8,11 @@ reload(sys)
 sys.setdefaultencoding('utf8')
 PageSize = 100
 
+# Only list selected projects.
 projects = ["HADOOP", "YARN", "MAPREDUCE", "HDFS"]
+
+# Only list selected priorities.
+priority = "Blocker, Critical, Major, Minor, Trivial"
 
 def get_git_log(branch):
     git_command = ["git", "log", "--oneline", branch]
@@ -20,7 +24,7 @@ def get_git_log(branch):
 def get_tickets(fixVersion):
     return_value = []
     for p in projects:
-        jql = "project in (%s) and fixVersion = %s " % (p, fixVersion)
+        jql = "project in (%s) and priority in (%s) and fixVersion = %s " % (p, priority, fixVersion)
         start = 0;
         while True:
             parameters = urllib.urlencode({'jql': jql, 'startAt': start, 'maxResults': PageSize})
